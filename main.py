@@ -3,6 +3,19 @@
 
 import os, sys, time, math, random
 from datetime import datetime
+
+# ============================================================
+# SYSTEM TWEAKS: Bildschirmschoner auf dem Pi erzwingen aus!
+# ============================================================
+os.environ['SDL_VIDEO_ALLOW_SCREENSAVER'] = '0'
+try:
+    # Verhindert DPMS (Blackscreen) auf X11-Systemen wie dem Pi
+    os.system("xset s off > /dev/null 2>&1")
+    os.system("xset -dpms > /dev/null 2>&1")
+    os.system("xset s noblank > /dev/null 2>&1")
+except:
+    pass
+
 import pygame
 from hacking_game import HackingGame
 from critl_personality import CRITLPersonality
@@ -87,7 +100,7 @@ PLAN_RAW = [
 def number_lessons(plan):
     n=1; out=[]
     for a,b,l in plan:
-        if l=="UNTERRICHT": l=f"{n}. STUNDE"; n+=1
+        if l=="UNTERRICHT": l=f"{n}."; n+=1
         out.append((a,b,l))
     return out
 PLAN = number_lessons(PLAN_RAW)
@@ -254,6 +267,7 @@ for k,p in CRITL_PATHS.items():
     except: critl_imgs[k]=None
 
 STORY_ASSETS = {}
+SCALED_CACHE = {} # Cache for smoothscaled images: {(asset_name, w, h): surface}
 def get_story_asset(asset_name):
     if not asset_name: return None
     if asset_name in STORY_ASSETS: return STORY_ASSETS[asset_name]
@@ -301,19 +315,27 @@ def draw_text_wrapped(text, x, y, font, color, max_w=580):
 
 def draw_bar(x, y, w, h, prog, is_pause, remain, label, t_start, t_end):
     pygame.draw.rect(screen, DIM_GREEN, (x, y, w, h))
-    pygame.draw.rect(screen, GREEN, (x, y, w, h), 3)
+    pygame.draw.rect(screen, GREEN, (x, y, w, h), 5) # Thicker border
     col = BLUE if is_pause else (blend(GREEN, WARN, 1-remain/120) if remain <= 120 else GREEN)
-    fill_w = int((w - 6) * prog)
-    if fill_w > 0: pygame.draw.rect(screen, col, (x + 3, y + 3, fill_w, h - 6))
+    fill_w = int((w - 10) * prog)
+    if fill_w > 0: pygame.draw.rect(screen, col, (x + 5, y + 5, fill_w, h - 10))
     full_text = f"{t_start}-{t_end} | {label}"
     if remain > 0: full_text += f" | NOCH {fmt(remain)}"
-    s_light = font_body.render(full_text, True, GREEN_SOFT)
-    s_dark  = font_body.render(full_text, True, BLACK)
+    
+    # Use larger font if it fits, else body font
+    s_light_large = font_large.render(full_text, True, GREEN_SOFT)
+    if s_light_large.get_width() < w - 20:
+        s_light = s_light_large
+        s_dark = font_large.render(full_text, True, BLACK)
+    else:
+        s_light = font_body.render(full_text, True, GREEN_SOFT)
+        s_dark  = font_body.render(full_text, True, BLACK)
+        
     tx = x + (w - s_light.get_width()) // 2
     ty = y + (h - s_light.get_height()) // 2 + 3 # Improved vertical shift for visual center
-    screen.set_clip(pygame.Rect(x+3, y+3, fill_w, h-6))
+    screen.set_clip(pygame.Rect(x+5, y+5, fill_w, h-10))
     screen.blit(s_dark, (tx, ty))
-    screen.set_clip(pygame.Rect(x+3+fill_w, y+3, w-6-fill_w, h-6))
+    screen.set_clip(pygame.Rect(x+5+fill_w, y+5, w-10-fill_w, h-10))
     screen.blit(s_light, (tx, ty))
     screen.set_clip(None)
 
@@ -380,74 +402,6 @@ def tint(color, alpha):
     s.fill((color[0], color[1], color[2], alpha))
     screen.blit(s, (0, 0))
 
-def draw_needs_footer():
-    if globals().get("active_event"): return []
-    # Full width at THE VERY BOTTOM
-    bar_y = H - 45
-    bar_h = 35
-    # 4 items spanning W
-    total_w = W - 40
-    step_w = total_w // 4
-    
-    rects = []
-    labels = [("snacks", "feed"), ("maintenance", "clean"), ("affection", "pet"), ("charge", "boost")]
-    
-    for i, (key, action) in enumerate(labels):
-        val = critl.needs.get(key, 0)
-        bx = 20 + i * step_w
-        
-        # --- DRAW THE BOX ---
-        rect = pygame.Rect(bx, bar_y, step_w - 10, bar_h)
-        mx, my = pygame.mouse.get_pos()
-        hover = rect.collidepoint(mx, my)
-        
-        # Flash check
-        is_flashing = time.time() < need_flashes.get(action, 0)
-        
-        rects.append((rect, action))
-        
-        # Draw bounding box
-        bg_col = (100, 50, 0) if is_flashing else DIM_GREEN
-        pygame.draw.rect(screen, bg_col, rect)
-        
-        border_col = ORANGE if is_flashing else (GREEN_SOFT if hover else GREEN)
-        pygame.draw.rect(screen, border_col, rect, 1)
-        
-        # --- CALC CENTERED CONTENT ---
-        val_text = f"{int(val)}%"
-        col = GREEN if val > 50 else (ORANGE if val > 20 else RED)
-        txt = font_v_small.render(val_text, True, col if not hover else GREEN_SOFT)
-        
-        icon_w = 18
-        spacer = 8
-        content_w = icon_w + spacer + txt.get_width()
-        start_x = bx + (rect.width - content_w) // 2
-        
-        icon_x = start_x
-        icon_y = bar_y + (bar_h - 18)//2
-        icon_col = border_col
-
-        # --- DRAW ICON ---
-        if key == "snacks": # PEANUT FLIP (Hexagon)
-             pts = [(icon_x, icon_y+5), (icon_x+8, icon_y), (icon_x+16, icon_y+ 5), (icon_x+16, icon_y+13), (icon_x+8, icon_y+18), (icon_x, icon_y+13)]
-             pygame.draw.polygon(screen, icon_col, pts, 1 if not hover else 0)
-        elif key == "maintenance": # WRENCH
-             pygame.draw.rect(screen, icon_col, (icon_x+4, icon_y+8, 8, 10)) # handle
-             pygame.draw.arc(screen, icon_col, (icon_x, icon_y, 16, 12), 0, math.pi, 2) # head
-        elif key == "affection": # HEART
-             pygame.draw.circle(screen, icon_col, (icon_x+4, icon_y+4), 4)
-             pygame.draw.circle(screen, icon_col, (icon_x+12, icon_y+4), 4)
-             pygame.draw.polygon(screen, icon_col, [(icon_x, icon_y+6), (icon_x+16, icon_y+6), (icon_x+8, icon_y+16)])
-        elif key == "charge": # BOLT
-             pts = [(icon_x+10, icon_y), (icon_x+2, icon_y+10), (icon_x+8, icon_y+10), (icon_x+4, icon_y+20), (icon_x+14, icon_y+8), (icon_x+8, icon_y+8)]
-             pygame.draw.lines(screen, icon_col, False, pts, 2)
-
-        # --- DRAW TEXT ---
-        text_x = start_x + icon_w + spacer
-        text_y = bar_y + (bar_h - txt.get_height()) // 2 + 1
-        screen.blit(txt, (text_x, text_y))
-            
-    return rects
 
 def draw_status_icons(t):
     start_x, y, r, g, b = W - 110, 20, 80, 255, 80
@@ -499,26 +453,6 @@ def draw_icon(icon_type, x, y):
     screen.blit(s, (x, y))
 
 # draw_rpg_overlay removed
-def draw_rainbow_overlay():
-    global success_flash_time
-    t = time.time()
-    if t < success_flash_time:
-        dur = 2.0
-        rem = success_flash_time - t
-        alpha = int((rem / dur) * 150)
-        
-        # Rainbow color cycling
-        speed = 5.0
-        r = int((math.sin(t * speed) + 1) * 127)
-        g = int((math.sin(t * speed + 2) + 1) * 127)
-        b = int((math.sin(t * speed + 4) + 1) * 127)
-        
-        s = pygame.Surface((W, H))
-        s.set_alpha(alpha)
-        s.fill((r, g, b))
-        screen.blit(s, (0, 0))
-
-
 # draw_choice_ui eliminated
 
 # ============================================================
@@ -582,7 +516,8 @@ if __name__ == "__main__":
         # ----------------------------------------------------
         now = get_adjusted_time()
         ist_wochenende = now.weekday() >= 5  # 5 = Samstag, 6 = Sonntag
-        ist_feierabend = now.hour >= 17 or now.hour < 7
+        # Erst ab 18:00, damit Leute noch nachmittags ungestört arbeiten können
+        ist_feierabend = now.hour >= 18 or now.hour < 7
         
         # DETERMINE MOOD & IMG EARLY FOR EVENTS
         mood = "neutral"
@@ -608,9 +543,9 @@ if __name__ == "__main__":
         if ist_wochenende or ist_feierabend:
             screen.fill(BLACK)
             
-            # Minimale Animation für niedrigen Stromverbrauch
-            pulse = (math.sin(t_now * 0.5) + 1) / 2  # Langsame Pulsierung
-            dim_val = int(20 + 30 * pulse)
+            # Deutlichere Animation, damit der Screen nicht schwarz wirkt (Bug-Fix)
+            pulse = (math.sin(t_now * 2.0) + 1) / 2  # Flotteres Pulsieren
+            dim_val = int(80 + 120 * pulse)          # Viel heller (80 bis 200)
             sleep_color = (0, dim_val, 0)
             
             # Zentrierter "Zzz..." Text
@@ -628,10 +563,10 @@ if __name__ == "__main__":
             screen.blit(status_surf, ((W - status_surf.get_width()) // 2, zzz_y + 80))
             
             # Minimaler Rahmen
-            pygame.draw.rect(screen, sleep_color, (20, 20, W-40, H-40), 1)
+            pygame.draw.rect(screen, sleep_color, (20, 20, W-40, H-40), 2)
             
             pygame.display.flip()
-            time.sleep(2)  # Längere Pause = weniger CPU/GPU Last
+            time.sleep(0.1)  # Nur 0.1s Pause, damit das Pulsieren flüssig ist und Events reagieren
             
             for e in pygame.event.get():
                 if e.type == pygame.KEYDOWN and e.key in (pygame.K_ESCAPE, pygame.K_q): 
@@ -662,16 +597,10 @@ if __name__ == "__main__":
                     # critl.trigger_event_speech(ev_type)
                     print(f"DEBUG: Triggered event {ev_type}")
                 
-                if e.key == pygame.K_TAB:
-                    critl.activate_node("start_node")
-                    print("DEBUG: Manually triggered story start")
+                if e.key == pygame.K_q:
+                    pygame.quit()
+                    sys.exit()
     
-            if e.type == pygame.MOUSEBUTTONDOWN:
-                mx, my = pygame.mouse.get_pos()
-                
-                # INTERACTION REMOVED
-                # Clicks no longer trigger care actions or choices
-                
                 if active_event and active_event["type"] == "hacking":
                      res = hacking_game.handle_click((mx, my))
                      if res == "EXIT":
@@ -714,17 +643,27 @@ if __name__ == "__main__":
                     # Subtle Zoom/Bounce Effect
                     scale_pulse = 1.0 + 0.05 * math.sin(t_now * 5)
                     sw, sh = int(350 * scale_pulse), int(350 * scale_pulse)
-                    img_scaled = pygame.transform.smoothscale(img, (sw, sh))
-                    screen.blit(img_scaled, (W//2 - sw//2, H//2 - sh//2))
+                    
+                    # Use a cache to avoid smoothscale every frame (important for Pi)
+                    # We round to nearest 5 pixels to improve cache hits while keeping animation smooth
+                    c_sw, c_sh = (sw // 5) * 5, (sh // 5) * 5
+                    cache_key = (et, c_sw, c_sh)
+                    if cache_key not in SCALED_CACHE:
+                        # Limit cache size
+                        if len(SCALED_CACHE) > 50: SCALED_CACHE.clear()
+                        SCALED_CACHE[cache_key] = pygame.transform.smoothscale(img, (c_sw, c_sh))
+                    
+                    img_scaled = SCALED_CACHE[cache_key]
+                    screen.blit(img_scaled, (W//2 - c_sw//2, H//2 - c_sh//2))
                 
                 # Special Flair for "This is Fine"
                 if et == "this_is_fine":
                     tint((255, 100, 0), int(30 + 30 * math.sin(t_now * 8)))
-                    # Random Fire Sparks
-                    for _ in range(30):
+                    # Reduced fire sparks for performance
+                    for _ in range(12):
                         rx, ry = random.randint(0, W), random.randint(0, H)
                         pygame.draw.circle(screen, (255, random.randint(150, 255), 0), (rx, ry), random.randint(1, 3))
-                        if random.random() > 0.9:
+                        if random.random() > 0.95:
                             pygame.draw.line(screen, (255, 200, 50), (rx, ry), (rx, ry - random.randint(10, 30)), 1)
             elif et == "glitch_green":
                 for _ in range(600):
@@ -1035,7 +974,7 @@ if __name__ == "__main__":
             screen.blit(font_smilie.render(active_face, True, (20, 100, 20)), (37, 182))
             screen.blit(font_smilie.render(active_face, True, GREEN), (35, 180))
             
-            draw_bar(20, H-110, 600, 45, prog, is_p, remain, label, t_s, t_e)
+            draw_bar(20, H-100, 600, 80, prog, is_p, remain, label, t_s, t_e)
             
             # Draw Controls (Left Side)
             # draw_games_button() removed
@@ -1076,13 +1015,12 @@ if __name__ == "__main__":
                 s_flash.fill((255, 150, 0, 80)) # Light orange tint
                 screen.blit(s_flash, (W - 360, 40), special_flags=pygame.BLEND_RGBA_ADD)
 
-            # --- DRAW NEEDS FOOTER ---
-            draw_needs_footer()
+
         
             # --- DRAW SPEECH ---
             speech = critl.get_current_speech()
             if speech:
-                draw_speech_bubble(speech, (W - 300, 150))
+                draw_speech_bubble(speech, (W - 300, 270))
             
         else:
             # --- TINT THE MONITOR DURING EVENTS ---
@@ -1095,7 +1033,6 @@ if __name__ == "__main__":
 
         # draw_choice_ui() call removed
         
-        draw_rainbow_overlay()
     
             
         # --- GLOBAL SCANLINES (Drawn over EVERYTHING for Fallout vibe) ---

@@ -197,8 +197,8 @@ class HackingGame:
             self.screen.blit(char_s, item['rect'].topleft)
 
         # Feedback Area unten rechts
-        fb_x = W - 200
-        fb_y = H - 150
+        fb_x = self.W - 200
+        fb_y = self.H - 150
         
         if hover_word:
             txt = f"> {hover_word}"
@@ -221,10 +221,10 @@ class HackingGame:
             
         if self.won:
              res_txt = "LOGIN SUCCESS"
-             self.screen.blit(self.header_font.render(res_txt, True, WHITE), (fb_x - 100, H - 50))
+             self.screen.blit(self.header_font.render(res_txt, True, WHITE), (fb_x - 100, self.H - 50))
         elif self.locked_out:
              res_txt = "TERMINAL LOCKED"
-             self.screen.blit(self.header_font.render(res_txt, True, (255, 0, 0)), (fb_x - 100, H - 50))
+             self.screen.blit(self.header_font.render(res_txt, True, (255, 0, 0)), (fb_x - 100, self.H - 50))
 
     def handle_click(self, mouse_pos):
         if self.locked_out or self.won:

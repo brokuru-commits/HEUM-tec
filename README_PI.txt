@@ -11,6 +11,7 @@ INSTALLATION - NUR 2 SCHRITTE:
 2. Terminal öffnen und ausführen:
    
    cd /media/pi/USB-NAME/robot-usb-deploy
+   bash SETUP_DEPS.sh   <-- NEU: Installiert nötige Pakete
    bash INSTALL_PI.sh
 
    (Ersetze USB-NAME mit dem Namen deines USB-Sticks)

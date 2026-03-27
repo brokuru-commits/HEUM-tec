@@ -19,7 +19,9 @@ mkdir -p "$(dirname "$AUTOSTART_FILE")"
 cat <<EOF > "$AUTOSTART_FILE"
 @lxpanel --profile LXDE-pi
 @pcmanfm --desktop --profile LXDE-pi
-@xscreensaver -no-splash
+@xset s off
+@xset -dpms
+@xset s noblank
 python3 $TARGET_DIR/main.py &
 EOF
 

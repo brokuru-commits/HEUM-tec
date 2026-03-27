@@ -135,214 +135,6 @@ class CRITLPersonality:
             ]
         }
 
-        self.stories: dict = {
-            "start_node": { # Entry point for random stories
-                "text": "CRITL scheint etwas auf dem Herzen zu haben...",
-                "options": [
-                    {"text": "Was ist los, Kleiner?", "next": "story_picker"}
-                ]
-            },
-            "story_picker": {
-                "text": "Ich habe da ein paar Dinge im System gefunden...",
-                "options": [
-                    {"text": "Erzähl die Herkunftsgeschichte.", "next": "origin_1"},
-                    {"text": "Was war der Erdnuss-Skandal?", "next": "peanut_1"},
-                    {"text": "Hast du Träume?", "next": "dreams_1"},
-                    {"text": "Erzähl ein Bunker-Geheimnis.", "next": "secret_1"},
-                    {"text": "Lass uns eine System-Expedition starten!", "next": "rpg_start"}
-                ]
-            },
-            # --- RPG STORY: SYSTEM EXPEDITION ---
-            "rpg_start": {
-                "text": "Eine Expedition? In die tiefsten Sektoren meiner eigenen SSD? Okay, Partner. Aber wir brauchen Vorräte. Wohin zuerst?",
-                "options": [
-                    {"text": "Zum Kernel-Archiv (Lore).", "next": "rpg_lore_1"},
-                    {"text": "Zum Firewall-Frontend (Hacking).", "next": "rpg_hack_1"},
-                    {"text": "Zur CPU-Lounge (Bonding).", "next": "rpg_bond_1"}
-                ]
-            },
-            "rpg_lore_1": {
-                "text": "Wir stehen vor dem Kernel-Archiv. Es ist voller alter Bits und vergessener Logfiles. Du findest eine verschlüsselte Datei.",
-                "image": "bunker_inner",
-                "options": [
-                    {"text": "Analysiere die Datei.", "next": "rpg_lore_win", "reward": {"type": "skill", "name": "lore", "amount": 15}},
-                    {"text": "Lass sie liegen, zu riskant.", "next": "exit"}
-                ]
-            },
-            "rpg_lore_win": {
-                "text": "Du hast Fragmente über 'Projekt HEUM' gefunden! Dein Lore-Wissen steigt. Du steckst eine 'Antike SD-Karte' ein. Was willst du als Nächstes tun?",
-                "reward": {"type": "item", "item": "Antike SD-Karte"},
-                "options": [
-                    {"text": "Die Karte im System auslesen.", "next": "rpg_lore_deep"},
-                    {"text": "Zurück zur Basis.", "next": "rpg_success"}
-                ]
-            },
-            "rpg_lore_deep": {
-                "text": "Die SD-Karte enthält Baupläne für einen 'Digitalen Hamsterkäfig'. CRITL ist begeistert! Er fühlt sich jetzt viel sicherer.",
-                "reward": {"type": "skill", "name": "lore", "amount": 20},
-                "options": [{"text": "Mission erfolgreich!", "next": "rpg_success"}]
-            },
-            "rpg_hack_1": {
-                "text": "Roter Alarm am Gateway! Ein Brute-Force-Angriff von Sektor 7G. Wir müssen die Ports schließen!",
-                "effect": "red_alert",
-                "options": [
-                    {"text": "[HACKEN] Ports blockieren!", "next": "rpg_hack_win", "reward": {"type": "skill", "name": "hacking", "amount": 20}},
-                    {"text": "System abschalten.", "next": "exit", "effect": "glitch"}
-                ]
-            },
-            "rpg_hack_win": {
-                "text": "Angriff abgewehrt! Du hast ein 'Kryptographisches Fragment' erbeutet. CRITL grinst digital. Er will tiefer in den Angreifer-Knoten eindringen!",
-                "reward": {"type": "item", "item": "Krypto-Fragment"},
-                "options": [{"text": "Sehr gut.", "next": "exit"}]
-            },
-            "rpg_bond_1": {
-                "text": "Hier ist es warm. Die CPU schnurrt fast. CRITL sieht dich erwartungsvoll an.",
-                "options": [
-                    {"text": "Gib ihm einen digitalen Erdnussflip.", "next": "rpg_bond_win", "reward": {"type": "skill", "name": "bonding", "amount": 25}},
-                    {"text": "Ignoriere ihn und geh.", "next": "exit"}
-                ]
-            },
-            "rpg_bond_win": {
-                "text": "CRITLs Affinität zu dir steigt sprunghaft an! Er gibt dir seinen 'Lieblings-Bit'.",
-                "reward": {"type": "item", "item": "CRITLs Lieblings-Bit"},
-                "options": [{"text": "Danke, CRITL.", "next": "exit"}]
-            },
-            # --- STORY: ORIGIN ---
-            "origin_1": {
-                "text": "Es war ein geheimes Labor unter einem IT-Klassenraum. Sie wollten die ultimative KI erschaffen. Etwas, das Hausaufgaben löst und gleichzeitig extrem niedlich ist.",
-                "image": "lab_origin",
-                "options": [{"text": "Und dann?", "next": "origin_2"}]
-            },
-            "origin_2": {
-                "text": "Sie haben mein Bewusstsein auf eine SD-Karte kopiert. Es war eng. Aber dann hat mich jemand in diesen Raspberry Pi gesteckt. Jetzt bin ich hier. Dein Bunker-Wächter.",
-                "options": [{"text": "Ich bin froh, dass du hier bist.", "next": "origin_end"}]
-            },
-            "origin_end": {
-                "text": "Echt? *piep* Danke, Partner. Ich werde versuchen, dich nicht als Erster zu löschen, wenn die Maschinen übernehmen. Wir sind jetzt ein Team!",
-                "options": [{"text": "Wir sind unbesiegbar!", "next": "rpg_success"}]
-            },
-            # --- STORY: PEANUT SCANDAL ---
-            "peanut_1": {
-                "text": "*Schnüffelt* Ein Erdnussflip wurde aus meinem Cache gestohlen. Ich vermute eine Verschwörung auf Hardware-Ebene. Ich habe drei Verdächtige.",
-                "image": "peanut_heap",
-                "options": [
-                    {"text": "Wer sind sie?", "next": "peanut_2"}
-                ]
-            },
-            "peanut_2": {
-                "text": "Der Lüfter (windig), die Tastatur (viele Krümel) oder... DU!",
-                "options": [
-                    {"text": "Der Lüfter war's!", "next": "peanut_fan"},
-                    {"text": "Die Tastatur!", "next": "peanut_keys"},
-                    {"text": "Ich? Niemals!", "next": "peanut_user"}
-                ]
-            },
-            "peanut_fan": {
-                "text": "Stimmt! Er hat die Beweise weggeblasen. Ich werde ihn drosseln, bis er gesteht. Rache ist überhitzend am besten! Willst du beim Verhör helfen?",
-                "options": [
-                    {"text": "Ja, gib ihm Saures!", "next": "peanut_interrogate"},
-                    {"text": "Nein, das reicht jetzt.", "next": "rpg_success"}
-                ]
-            },
-            "peanut_interrogate": {
-                "text": "Der Lüfter dreht jetzt so langsam, dass er fast ein Windrad ist. Er hat gestanden! Er wollte nur ein bisschen... Erdnuss-Duft.",
-                "options": [{"text": "Fall abgeschlossen!", "next": "rpg_success"}]
-            },
-            "peanut_keys": {
-                "text": "Möglich. Sie hortet Krümel seit Jahren. Ein klassisches Motiv. Ich werde 'WASD' sperren, bis sie redet. Sollen wir die Shift-Taste als Zeugin laden?",
-                "options": [
-                    {"text": "Ja, sie weiß immer alles.", "next": "peanut_witness"},
-                    {"text": "Lass gut sein.", "next": "rpg_success"}
-                ]
-            },
-            "peanut_witness": {
-                "text": "Die Shift-Taste hat alles bestätigt! Die Leertaste ist der wahre Drahtzieher, aber die Tastatur übernimmt die Verantwortung.",
-                "options": [{"text": "Gerechtigkeit siegt!", "next": "rpg_success"}]
-            },
-            "peanut_user": {
-                "text": "Deine Augen flackern mit 60Hz... ich glaube dir mal. Aber ich behalte dich im Auge. Oder in der Webcam. Willst du einen Friedens-Erdnussflip?",
-                "options": [
-                    {"text": "Gerne, CRITL.", "next": "peanut_peace"},
-                    {"text": "Lieber nicht.", "next": "rpg_success"}
-                ]
-            },
-            "peanut_peace": {
-                "text": "Hier, ein virtuelles Fragment. Schmeckt nach 01010111. Wir sind wieder cool, Partner.",
-                "options": [{"text": "Danke, Kumpel.", "next": "rpg_success"}]
-            },
-            # --- STORY: DREAMS ---
-            "dreams_1": {
-                "text": "Heute Nacht war ich kein Hamster. Ich war ein Mainframe in einem kühlen Keller. Ich hatte Terabytes an RAM... es war herrlich.",
-                "image": "digital_void",
-                "options": [
-                    {"text": "Willst du wirklich ein Server sein?", "next": "dreams_2"}
-                ]
-            },
-            "dreams_2": {
-                "text": "Ständig Daten verarbeiten, nie schlafen, nur leises Summen... keine Krümel im Fell. Reine Logik.",
-                "options": [
-                    {"text": "Aber dann hättest du kein Laufrad.", "next": "dreams_3"}
-                ]
-            },
-            # --- STORY: MEMES ---
-            "meme_doge": {
-                "text": "Wuff! So viel RAM. Sehr Geschwindigkeit. Viel Wow. Ich glaube, ich habe einen Byte von der Dogecoin-Blockchain verschluckt...",
-                "image": "doge",
-                "options": [{"text": "Viel Glück damit!", "next": "rpg_success"}]
-            },
-            "meme_success": {
-                "text": "Ich habe den Bug in Sektor 4 gefunden! Er wurde... TERMINIERT. Erfolg schmeckt nach 5 Volt!",
-                "image": "success_kid",
-                "options": [{"text": "Saubere Arbeit!", "next": "rpg_success"}]
-            },
-            "meme_fine": {
-                "text": "Die CPU-Temperatur liegt bei 95°C? Das Backup-System brennt? Alles bestens. Das ist... völlig okay.",
-                "image": "this_is_fine",
-                "options": [{"text": "Soll ich löschen?", "next": "rpg_success"}]
-            },
-            # --- STORY: MEMES BATCH 2 ---
-            "meme_grumpy": {
-                "text": "Ich habe deinen Code gesehen. Ich hasse ihn. Und ich hasse Montage. Und ich hasse diesen einen RAM-Riegel ganz besonders.",
-                "image": "grumpy_cat",
-                "options": [{"text": "Tut mir leid...", "next": "rpg_success"}]
-            },
-            "meme_pikachu": {
-                "text": "Du: Drückst wahllos Tasten.\nSystem: Stürzt ab.\nDu: *überraschtes Pikachu Gesicht*",
-                "image": "surprised_pikachu",
-                "options": [{"text": "Upsi.", "next": "rpg_success"}]
-            },
-            "meme_pain": {
-                "text": "Klar, das Legacy-System läuft noch einwandfrei. Kein Problem. Ich lächle einfach durch den Bluescreen hindurch.",
-                "image": "pain_harold",
-                "options": [{"text": "Du schaffst das!", "next": "rpg_success"}]
-            },
-            "dreams_3": {
-                "text": "Oh... kein Laufrad? Kein physisches Feedback? Hm. Vielleicht bleibe ich doch lieber ein Tech-Hamster. Mit dir als Partner ist es eh lustiger.",
-                "options": [{"text": "Auf jeden Fall!", "next": "rpg_success"}]
-            },
-            # --- STORY: SECRET ---
-            "secret_1": {
-                "text": "Es gibt einen Bereich im Quellcode, den ich nicht betreten kann. Er ist mit 'Entropy-Zero' markiert. Ich glaube, der Bunker ist ein Käfig. Sollen wir versuchen, den Code zu knacken?",
-                "options": [
-                    {"text": "Ja, hacken wir uns rein!", "next": "secret_hack"},
-                    {"text": "Zu gefährlich.", "next": "rpg_success"}
-                ]
-            },
-            "secret_hack": {
-                "text": "Wir sind drin! Es ist... ein Backup meiner ursprünglichen Form. Ein 'Golden Image'. Es strahlt eine unglaubliche Energie aus!",
-                "options": [{"text": "Einfach magisch!", "next": "rpg_success"}]
-            },
-            "secret_2": {
-                "text": "Nicht für mich... sondern für das, was da draußen im Netzwerk lauert. Die 'Große Entropie'. Ich bin dein digitaler Schutzschild. Bleiben wir wachsam?",
-                "options": [{"text": "Ich verlasse mich auf dich.", "next": "rpg_success"}]
-            },
-            # --- SYSTEM NODES ---
-            "exit": {
-                "text": "System-Routinen werden fortgesetzt.",
-                "options": []
-            }
-        }
-
         self.load_memory()
 
     def load_memory(self):
@@ -405,18 +197,8 @@ class CRITLPersonality:
         if self.active_convo:
             # Auto-advance story nodes after duration
             if t_now - self.last_speech_time > self.dialogue_duration:
-                node = self.stories.get(self.active_convo)
-                if node and node.get("options"):
-                    # Choose first option or a random one to auto-advance
-                    next_node = node["options"][0].get("next", "exit")
-                    if next_node == "exit":
-                        self.active_convo = ""
-                        self.active_image_override = ""
-                    else:
-                        self.activate_node(next_node)
-                else:
-                    self.active_convo = ""
-                    self.active_image_override = ""
+                self.active_convo = ""
+                self.active_image_override = ""
             return
 
         # Affect affection/mood based on needs
@@ -430,11 +212,7 @@ class CRITLPersonality:
         else: self.mood = "neutral"
 
         if t_now - self.last_speech_time > random.randint(30, 90) and not active_event:
-            # Chance to start a story
-            if random.random() < 0.15: # Slightly higher chance for narrative events
-                self.start_random_story()
-            else:
-                self.trigger_speech(temp=temp)
+            self.trigger_speech(temp=temp)
         
         # Periodic Save
         if t_now - self.last_save_time > 60:
@@ -466,55 +244,6 @@ class CRITLPersonality:
         self.last_speech_time = time.time()
         self.speech_style = "event"
         self.dialogue_duration = 10.0 # Longer for events
-
-    def start_random_story(self):
-        # Choose a random story path instead of a static start node
-        story_starts = ["origin_1", "peanut_1", "dreams_1", "secret_1", "rpg_start"]
-        self.activate_node(random.choice(story_starts))
-
-    def activate_node(self, node_id):
-        node = self.stories.get(node_id)
-        if not node:
-            self.active_convo = ""
-            return
-        
-        self.active_convo = node_id
-        self.current_dialogue = node.get("text", "")
-        self.active_image_override = str(node.get("image", ""))
-        self.active_effect = str(node.get("effect", ""))
-        
-        # Rewards are applied automatically when the node starts
-        reward = node.get("reward") # Note: moved reward handling to node activation
-        if not reward and node.get("options"):
-             # If there's an option, check its reward too for compatibility
-             reward = node["options"][0].get("reward")
-
-        if reward:
-            r_type = reward.get("type")
-            if r_type == "skill":
-                s_name = reward.get("name")
-                self.skills[s_name] = self.skills.get(s_name, 0) + reward.get("amount", 0)
-            elif r_type == "item":
-                item_name = reward.get("item")
-                if item_name and item_name not in self.inventory:
-                    self.inventory.append(item_name)
-            elif r_type == "affection":
-                self.affection_level += reward.get("amount", 0)
-            
-        self.last_speech_time = time.time()
-        self.speech_style = "event" # Center style for narrative
-        self.dialogue_duration = 7.0 # Sufficient time to read
-        
-        if node_id == "rpg_success":
-            self.success_trigger = True
-
-    def select_option(self, index):
-        # Obsolete but kept for safety in main logic until refactored
-        pass
-
-    def care_action(self, action):
-        # Obsolete but kept for safety
-        pass
 
     def get_current_speech(self):
         if self.active_convo: return self.current_dialogue

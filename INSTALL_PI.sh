@@ -15,6 +15,16 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 echo "USB-Stick gefunden: $SCRIPT_DIR"
 echo ""
 
+# WICHTIG: Abhängigkeiten zuerst prüfen
+if [ ! -f "/usr/bin/git" ] || [ ! -f "/usr/lib/python3/dist-packages/pygame/__init__.py" ]; then
+    echo "WARNUNG: Es fehlen System-Abhängigkeiten!"
+    echo "Bitte führe zuerst folgendes aus:"
+    echo "  bash $SCRIPT_DIR/SETUP_DEPS.sh"
+    echo ""
+    read -p "Trotzdem fortfahren? (j/n): " DEP_CONFIRM
+    if [ "$DEP_CONFIRM" != "j" ]; then exit 1; fi
+fi
+
 # Frage nach Zielverzeichnis
 read -p "ROBOT OS Verzeichnis auf dem Pi [/home/bot/robot]: " TARGET_DIR
 TARGET_DIR=${TARGET_DIR:-/home/bot/robot}
